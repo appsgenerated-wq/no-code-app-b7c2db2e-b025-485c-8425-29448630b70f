@@ -1,0 +1,48 @@
+name: PitaPerfect
+description: A platform to discover, rate, and share pita bread recipes.
+
+entities:
+  User:
+    authenticable: true
+    properties:
+      - name
+      - { name: email, type: email }
+      - { name: role, type: choice, options: { values: [admin, user], default: user } }
+    policies:
+      create:
+        - access: admin
+      read:
+        - { access: restricted, allow: User, condition: self }
+      update:
+        - { access: restricted, allow: User, condition: self }
+      delete:
+        - access: admin
+      signup:
+        - access: public
+
+  Recipe:
+    properties:
+      - { name: name, type: string, options: { required: true } }
+      - { name: ingredients, type: text, options: { required: true } }
+      - { name: instructions, type: text, options: { required: true } }
+      - { name: prepTime, type: number, options: { label: 'Prep Time (minutes)' } }
+      - { name: photo, type: image, options: { sizes: { thumbnail: { width: 400, height: 400 } } } }
+    belongsTo:
+      - { name: owner, entity: User }
+    policies:
+      create:
+        - { access: restricted, allow: User }
+      read:
+        - access: public
+      update:
+        - { access: restricted, allow: User, condition: self }
+      delete:
+        - { access: restricted, allow: User, condition: self }
+
+# Health check endpoint for connection testing
+endpoints:
+  health:
+    path: /api/health
+    method: GET
+    policies: []
+    handler: healthCheck
